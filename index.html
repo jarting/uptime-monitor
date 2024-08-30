@@ -21,6 +21,17 @@
         h1 {
             text-align: center;
         }
+        .bar {
+            height: 20px;
+            border-radius: 5px;
+            margin: 5px 0;
+        }
+        .bar.success {
+            background-color: #28a745;
+        }
+        .bar.failure {
+            background-color: #dc3545;
+        }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -28,69 +39,71 @@
     <div class="container">
         <h1>Uptime Monitor</h1>
         <canvas id="uptimeChart" width="400" height="200"></canvas>
+        <div id="logs">
+            <!-- Logs will be inserted here -->
+        </div>
     </div>
     <script>
-        // Fetch and display data from ping_log.txt
-        fetch('https://raw.githubusercontent.com/jarting/uptime-monitor/main/ping_log.txt')
-            .then(response => response.text())
-            .then(data => {
-                const lines = data.trim().split('\n').reverse(); // Reverse order to show latest data on the right
-                const labels = [];
-                const values = [];
+        // Dummy data for the example
+        const labels = ["10:00", "10:05", "10:10", "10:15", "10:20"];
+        const data = {
+            labels: labels,
+            datasets: [{
+                label: 'Ping Response Time (ms)',
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                data: [23, 45, 0, 22, 50], // Example response times (0 indicates failure)
+            }]
+        };
 
-                lines.forEach(line => {
-                    const [timestamp, status] = line.split(' - ');
-                    labels.push(timestamp);
-                    values.push(status.includes('failed') ? 0 : parseInt(status.split(' ')[1])); // Value 0 for failure
-                });
-
-                // Configure the chart
-                const config = {
-                    type: 'line',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Ping Response Time (ms)',
-                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                            borderColor: 'rgba(54, 162, 235, 1)',
-                            data: values,
-                        }]
+        const config = {
+            type: 'line',
+            data: data,
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
                     },
-                    options: {
-                        scales: {
-                            y: {
-                                beginAtZero: true
-                            },
-                            x: {
-                                beginAtZero: true,
-                                reverse: false // Ensure latest data is on the right
-                            }
-                        },
-                        plugins: {
-                            legend: {
-                                display: false
-                            },
-                            tooltip: {
-                                callbacks: {
-                                    label: function(tooltipItem) {
-                                        if (tooltipItem.raw === 0) {
-                                            return 'Ping failed';
-                                        }
-                                        return `Ping: ${tooltipItem.raw} ms`;
-                                    }
+                    tooltip: {
+                        callbacks: {
+                            label: function(tooltipItem) {
+                                if (tooltipItem.raw === 0) {
+                                    return 'Ping failed';
                                 }
+                                return `Ping: ${tooltipItem.raw} ms`;
                             }
                         }
                     }
-                };
+                }
+            }
+        };
 
-                // Create the chart
-                const uptimeChart = new Chart(
-                    document.getElementById('uptimeChart'),
-                    config
-                );
-            })
-            .catch(error => console.error('Error fetching the data:', error));
+        const uptimeChart = new Chart(
+            document.getElementById('uptimeChart'),
+            config
+        );
+
+        // Fetch and display logs from ping_log.txt
+        fetch('https://raw.githubusercontent.com/jarting/uptime-monitor/main/ping_log.txt')
+            .then(response => response.text())
+            .then(data => {
+                const lines = data.split('\n');
+                const logsContainer = document.getElementById('logs');
+
+                lines.forEach(line => {
+                    if (line.trim()) { // Check if line is not empty
+                        const [timestamp, status] = line.split(' - ');
+                        const logElement = document.createElement('div');
+                        logElement.className = `bar ${status.includes('failed') ? 'failure' : 'success'}`;
+                        logsContainer.appendChild(logElement);
+                    }
+                });
+            });
     </script>
 </body>
 </html>
