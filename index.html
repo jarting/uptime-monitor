@@ -50,25 +50,26 @@
         </div>
     </div>
     <script>
-        // Simulate loading data from a log file
-        const logs = [
-            { timestamp: "2024-08-30T10:15:00Z", status: "success", time: "23.45 ms" },
-            { timestamp: "2024-08-30T10:10:00Z", status: "failure", time: "" },
-            { timestamp: "2024-08-30T10:05:00Z", status: "success", time: "22.12 ms" },
-            // Add more logs here
-        ];
+        // Fetch and display logs from ping_log.txt
+        fetch('https://raw.githubusercontent.com/jarting/uptime-monitor/main/uptime_log.json')
+            .then(response => response.text())
+            .then(data => {
+                const lines = data.split('\n');
+                const logsContainer = document.getElementById('logs');
 
-        const logsContainer = document.getElementById('logs');
-
-        logs.forEach(log => {
-            const logElement = document.createElement('div');
-            logElement.className = `status ${log.status}`;
-            logElement.innerHTML = `
-                <span>${log.status === 'success' ? `Ping succeeded, time=${log.time}` : 'Ping failed'}</span>
-                <span class="timestamp">${log.timestamp}</span>
-            `;
-            logsContainer.appendChild(logElement);
-        });
+                lines.forEach(line => {
+                    if (line.trim()) { // Check if line is not empty
+                        const [timestamp, status] = line.split(' - ');
+                        const logElement = document.createElement('div');
+                        logElement.className = `status ${status.includes('failed') ? 'failure' : 'success'}`;
+                        logElement.innerHTML = `
+                            <span>${status}</span>
+                            <span class="timestamp">${timestamp}</span>
+                        `;
+                        logsContainer.appendChild(logElement);
+                    }
+                });
+            });
     </script>
 </body>
 </html>
