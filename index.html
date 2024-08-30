@@ -5,32 +5,70 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Uptime Monitor</title>
     <style>
-        body { font-family: Arial, sans-serif; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { border: 1px solid #ddd; padding: 8px; }
-        th { background-color: #f2f2f2; }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+        }
+        .status {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .status.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .status.failure {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .timestamp {
+            font-size: 12px;
+            color: #888;
+        }
     </style>
 </head>
 <body>
-    <h1>Uptime Monitor</h1>
-    <table id="logTable">
-        <thead>
-            <tr>
-                <th>Timestamp</th>
-                <th>Status</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
+    <div class="container">
+        <h1>Uptime Monitor</h1>
+        <div id="logs">
+            <!-- Logs will be inserted here -->
+        </div>
+    </div>
     <script>
-        fetch('uptime_log.json')
-            .then(response => response.json())
-            .then(data => {
-                const tableBody = document.querySelector('#logTable tbody');
-                const row = document.createElement('tr');
-                row.innerHTML = `<td>${data.timestamp}</td><td>${data.status}</td>`;
-                tableBody.appendChild(row);
-            });
+        // Simulate loading data from a log file
+        const logs = [
+            { timestamp: "2024-08-30T10:15:00Z", status: "success", time: "23.45 ms" },
+            { timestamp: "2024-08-30T10:10:00Z", status: "failure", time: "" },
+            { timestamp: "2024-08-30T10:05:00Z", status: "success", time: "22.12 ms" },
+            // Add more logs here
+        ];
+
+        const logsContainer = document.getElementById('logs');
+
+        logs.forEach(log => {
+            const logElement = document.createElement('div');
+            logElement.className = `status ${log.status}`;
+            logElement.innerHTML = `
+                <span>${log.status === 'success' ? `Ping succeeded, time=${log.time}` : 'Ping failed'}</span>
+                <span class="timestamp">${log.timestamp}</span>
+            `;
+            logsContainer.appendChild(logElement);
+        });
     </script>
 </body>
 </html>
