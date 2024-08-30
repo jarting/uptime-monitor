@@ -21,35 +21,73 @@
         h1 {
             text-align: center;
         }
-        .status {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            padding: 10px;
+        .bar {
+            height: 20px;
             border-radius: 5px;
+            margin: 5px 0;
         }
-        .status.success {
-            background-color: #d4edda;
-            color: #155724;
+        .bar.success {
+            background-color: #28a745;
         }
-        .status.failure {
-            background-color: #f8d7da;
-            color: #721c24;
-        }
-        .timestamp {
-            font-size: 12px;
-            color: #888;
+        .bar.failure {
+            background-color: #dc3545;
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="container">
         <h1>Uptime Monitor</h1>
+        <canvas id="uptimeChart" width="400" height="200"></canvas>
         <div id="logs">
             <!-- Logs will be inserted here -->
         </div>
     </div>
     <script>
+        // Dummy data for the example
+        const labels = ["10:00", "10:05", "10:10", "10:15", "10:20"];
+        const data = {
+            labels: labels,
+            datasets: [{
+                label: 'Ping Response Time (ms)',
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                data: [23, 45, 0, 22, 50], // Example response times (0 indicates failure)
+            }]
+        };
+
+        const config = {
+            type: 'line',
+            data: data,
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(tooltipItem) {
+                                if (tooltipItem.raw === 0) {
+                                    return 'Ping failed';
+                                }
+                                return `Ping: ${tooltipItem.raw} ms`;
+                            }
+                        }
+                    }
+                }
+            }
+        };
+
+        const uptimeChart = new Chart(
+            document.getElementById('uptimeChart'),
+            config
+        );
+
         // Fetch and display logs from ping_log.txt
         fetch('https://raw.githubusercontent.com/jarting/uptime-monitor/main/ping_log.txt')
             .then(response => response.text())
@@ -61,11 +99,7 @@
                     if (line.trim()) { // Check if line is not empty
                         const [timestamp, status] = line.split(' - ');
                         const logElement = document.createElement('div');
-                        logElement.className = `status ${status.includes('failed') ? 'failure' : 'success'}`;
-                        logElement.innerHTML = `
-                            <span>${status}</span>
-                            <span class="timestamp">${timestamp}</span>
-                        `;
+                        logElement.className = `bar ${status.includes('failed') ? 'failure' : 'success'}`;
                         logsContainer.appendChild(logElement);
                     }
                 });
