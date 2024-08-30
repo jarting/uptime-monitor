@@ -30,41 +30,40 @@
         <canvas id="uptimeChart" width="400" height="200"></canvas>
     </div>
     <script>
+        // Fetch and display data from ping_log.txt
         fetch('https://raw.githubusercontent.com/jarting/uptime-monitor/main/ping_log.txt')
             .then(response => response.text())
             .then(data => {
-                const lines = data.trim().split('\n').reverse(); // Membalikkan urutan agar terbaru di kanan
+                const lines = data.trim().split('\n').reverse(); // Reverse order to show latest data on the right
                 const labels = [];
                 const values = [];
 
                 lines.forEach(line => {
                     const [timestamp, status] = line.split(' - ');
                     labels.push(timestamp);
-                    values.push(status.includes('failed') ? 0 : parseInt(status.split(' ')[1])); // Nilai 0 untuk kegagalan
+                    values.push(status.includes('failed') ? 0 : parseInt(status.split(' ')[1])); // Value 0 for failure
                 });
 
-                // Konfigurasi grafik
+                // Configure the chart
                 const config = {
-                    type: 'bar',
+                    type: 'line',
                     data: {
                         labels: labels,
                         datasets: [{
                             label: 'Ping Response Time (ms)',
-                            backgroundColor: values.map(value => value === 0 ? '#dc3545' : '#28a745'),
-                            borderColor: '#ffffff',
-                            borderWidth: 1,
+                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
                             data: values,
                         }]
                     },
                     options: {
-                        indexAxis: 'y',
                         scales: {
-                            x: {
-                                beginAtZero: true,
-                                reverse: true
-                            },
                             y: {
                                 beginAtZero: true
+                            },
+                            x: {
+                                beginAtZero: true,
+                                reverse: false // Ensure latest data is on the right
                             }
                         },
                         plugins: {
@@ -85,12 +84,13 @@
                     }
                 };
 
-                // Membuat grafik
+                // Create the chart
                 const uptimeChart = new Chart(
                     document.getElementById('uptimeChart'),
                     config
                 );
-            });
+            })
+            .catch(error => console.error('Error fetching the data:', error));
     </script>
 </body>
 </html>
